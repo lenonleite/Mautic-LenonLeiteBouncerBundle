@@ -1,16 +1,21 @@
 <?php
 
-$localPhpStanConfig = file_get_contents(__DIR__.'/../phpstan.neon');
+$localPhpStanConfigPath = __DIR__.'/../phpstan.neon';
+
+if (!is_file($localPhpStanConfigPath)) {
+    exit(0);
+}
+
+$localPhpStanConfig = file_get_contents($localPhpStanConfigPath);
 
 if (false === $localPhpStanConfig) {
     throw new \RuntimeException('Unable to read phpstan.neon.');
 }
 
-
 $configParts = explode('###', $localPhpStanConfig);
 
 if (3 !== count($configParts)) {
-    throw new \RuntimeException('Local phpstan.neon contains invalid data.');
+    exit(0);
 }
 
 $phpStanPatch = $configParts[2];
@@ -21,7 +26,8 @@ $phpStanPatch = str_replace(
     $phpStanPatch
 );
 
-$mauticPhpStanConfig = file_get_contents(__DIR__.'/../../../phpstan.neon');
+$mauticPhpStanConfigPath = __DIR__.'/../../../phpstan.neon';
+$mauticPhpStanConfig     = file_get_contents($mauticPhpStanConfigPath);
 
 if (false === $mauticPhpStanConfig) {
     throw new \RuntimeException('Unable to read Mautic phpstan.neon.');
@@ -33,7 +39,7 @@ $phpStanPatch = \str_replace(
     $mauticPhpStanConfig
 );
 
-$result = file_put_contents(__DIR__.'/../../../phpstan.neon', $phpStanPatch);
+$result = file_put_contents($mauticPhpStanConfigPath, $phpStanPatch);
 
 if (false === $result) {
     throw new \RuntimeException('Unable to write Mautic phpstan.neon.');

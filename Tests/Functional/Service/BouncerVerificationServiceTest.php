@@ -7,6 +7,7 @@ namespace MauticPlugin\LenonLeiteBouncerBundle\Tests\Functional\Service;
 use Mautic\CoreBundle\Test\MauticMysqlTestCase;
 use MauticPlugin\LenonLeiteBouncerBundle\Client\BouncerClientInterface;
 use MauticPlugin\LenonLeiteBouncerBundle\Entity\BouncerRequest;
+use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerVerificationService;
 use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\ActivePluginTrait;
 use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\HelperEntitiesTrait;
 use Symfony\Component\HttpFoundation\Request;
@@ -58,7 +59,9 @@ class BouncerVerificationServiceTest extends MauticMysqlTestCase
             }
         });
 
-        $this->client->request(Request::METHOD_GET, sprintf('/s/bouncer/lead/%d/check', $lead->getId()));
+        $verificationService = static::getContainer()->get(BouncerVerificationService::class);
+        \assert($verificationService instanceof BouncerVerificationService);
+        $verificationService->verifyLead($lead);
 
         /** @var list<BouncerRequest> $requests */
         $requests = $this->em->getRepository(BouncerRequest::class)->findBy([], ['dateAdded' => 'DESC']);
