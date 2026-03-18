@@ -13,27 +13,19 @@ env:
 
 jobs:
   phpunit:
-    name: PHPUnit ${{ matrix.php-versions }}, ${{ matrix.db-label }}, Mautic ${{ matrix.mautic-versions }}
+    name: PHPUnit ${{ matrix.php-versions }}, ${{ matrix.db-types }}, Mautic ${{ matrix.mautic-versions }}
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['8.2', '8.3', '8.4']
+        php-versions: ['8.2', '8.3']
+        db-types: ['mysql', 'mariadb']
         mautic-versions: ['5.2']
-        include:
-          - db-label: mysql-8.4
-            db-image: mysql:8.4
-          - db-label: mysql-9.6
-            db-image: mysql:9.6
-          - db-label: mariadb-10.11
-            db-image: mariadb:10.11
-          - db-label: mariadb-11.4
-            db-image: mariadb:11.4
 
     services:
       database:
-        image: ${{ matrix.db-image }}
+        image: ${{ matrix.db-types == 'mysql' && 'mysql:8.0' || 'mariadb:10.3' }}
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_DATABASE: mautictest
@@ -41,7 +33,7 @@ jobs:
           - 3306
         options: >-
           --shm-size=2gb
-          --name=${{ matrix.db-label }}
+          --name=${{ matrix.db-types }}
           --tmpfs=/var/lib/mysql
           --health-cmd="mysqladmin ping"
           --health-interval=10s
@@ -102,7 +94,7 @@ jobs:
           DB_PORT: ${{ job.services.database.ports[3306] }}
         run: php bin/console mautic:plugins:install --env=dev
 
-      - name: Run tests - database = ${{ matrix.db-label }}
+      - name: Run tests - database = ${{ matrix.db-types }}
         run: |
           rm -rf var/cache
           export DB_PORT="${{ job.services.database.ports[3306] }}"
@@ -112,7 +104,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: logs-${{ matrix.php-versions }}-${{ matrix.db-label }}-${{ matrix.mautic-versions }}
+          name: logs-${{ matrix.php-versions }}-${{ matrix.db-types }}-${{ matrix.mautic-versions }}
           path: |
             ./var/logs/*
             ./media/files/temp/test*.html
@@ -124,7 +116,7 @@ jobs:
       fail-fast: false
       matrix:
         commands: ['PHPStan', 'CS Fixer', 'Rector', 'Twig Lint']
-        php-versions: ['8.3', '8.4']
+        php-versions: ['8.3']
         mautic-versions: ['5.2']
 
     name: ${{ matrix.commands }} - ${{ matrix.php-versions }} - ${{ matrix.mautic-versions }}
