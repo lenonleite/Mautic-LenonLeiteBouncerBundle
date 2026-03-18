@@ -14,7 +14,7 @@ class BouncerResultNormalizer
     public function normalize(array $payload): array
     {
         $status = strtolower((string) ($payload['status'] ?? $payload['result'] ?? 'unknown'));
-        $score = null;
+        $score  = null;
         if (isset($payload['score']) && is_numeric($payload['score'])) {
             $rawScore = (float) $payload['score'];
             $score    = $rawScore <= 1 ? (int) round($rawScore * 100) : (int) round($rawScore);

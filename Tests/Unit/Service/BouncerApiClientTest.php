@@ -15,20 +15,20 @@ class BouncerApiClientTest extends TestCase
 {
     public function testCreateBatchSendsDocumentedArrayPayload(): void
     {
-        $capturedMethod = null;
-        $capturedUrl = null;
+        $capturedMethod  = null;
+        $capturedUrl     = null;
         $capturedOptions = [];
 
         $httpClient = new MockHttpClient(function (string $method, string $url, array $options) use (&$capturedMethod, &$capturedUrl, &$capturedOptions) {
-            $capturedMethod = $method;
-            $capturedUrl = $url;
+            $capturedMethod  = $method;
+            $capturedUrl     = $url;
             $capturedOptions = $options;
 
             return new MockResponse(json_encode([
-                'batchId' => 'batch-123',
-                'status'  => 'queued',
+                'batchId'  => 'batch-123',
+                'status'   => 'queued',
                 'quantity' => 2,
-                'credits' => 2,
+                'credits'  => 2,
             ], JSON_THROW_ON_ERROR));
         });
 
