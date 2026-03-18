@@ -1,0 +1,35 @@
+{% extends '@MauticCore/Default/content.html.twig' %}
+
+{% block headerTitle %}{{ 'lenonleitebouncer.lead.details.title'|trans }}{% endblock %}
+{% block mauticContent %}lead{% endblock %}
+
+{% block content %}
+{% set statusKey = status is not null and status != '' ? 'lenonleitebouncer.status.' ~ status : null %}
+{% set statusLabel = statusKey ? statusKey|trans : 'lenonleitebouncer.common.na'|trans %}
+{% set reasonKey = reason is not null and reason != '' ? 'lenonleitebouncer.reason.' ~ reason : null %}
+{% set reasonLabel = reasonKey ? reasonKey|trans : 'lenonleitebouncer.common.na'|trans %}
+{% set toxicKey = toxic is defined and toxic is not empty ? 'lenonleitebouncer.toxic.' ~ toxic : null %}
+{% set toxicLabel = toxicKey ? toxicKey|trans : 'lenonleitebouncer.common.na'|trans %}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">{{ 'lenonleitebouncer.lead.details.title'|trans }}</h3>
+    </div>
+    <div class="panel-body">
+        <p><strong>{{ 'lenonleitebouncer.lead.details.email'|trans }}:</strong> {{ lead.email }}</p>
+        <p><strong>{{ 'lenonleitebouncer.lead.details.status'|trans }}:</strong> {{ statusKey and statusLabel != statusKey ? statusLabel : (status ?: 'lenonleitebouncer.common.na'|trans) }}</p>
+        <p><strong>{{ 'lenonleitebouncer.lead.details.score'|trans }}:</strong> {{ score is not null ? score : 'lenonleitebouncer.common.na'|trans }}</p>
+        <p class="text-muted">{{ 'lenonleitebouncer.lead.details.score_help'|trans }}</p>
+        <p><strong>{{ 'lenonleitebouncer.lead.details.reason'|trans }}:</strong> {{ reasonKey and reasonLabel != reasonKey ? reasonLabel : (reason ?: 'lenonleitebouncer.common.na'|trans) }}</p>
+        <p><strong>{{ 'lenonleitebouncer.lead.details.toxic'|trans }}:</strong> {{ toxicKey and toxicLabel != toxicKey ? toxicLabel : (toxic ?: 'lenonleitebouncer.common.na'|trans) }}</p>
+        <p><strong>{{ 'lenonleitebouncer.lead.details.toxicity'|trans }}:</strong> {{ toxicity is not null ? toxicity : 'lenonleitebouncer.common.na'|trans }}</p>
+        <p class="text-muted">{{ 'lenonleitebouncer.lead.details.toxicity_help'|trans }}</p>
+        <p><strong>{{ 'lenonleitebouncer.lead.details.provider'|trans }}:</strong> {{ provider ?: 'lenonleitebouncer.common.na'|trans }}</p>
+        <p>
+            <a class="btn btn-primary btn-sm" href="{{ partnerUrl }}" target="_blank" rel="noopener noreferrer">{{ 'lenonleitebouncer.dashboard.cta.buy_credits'|trans }}</a>
+        </p>
+    </div>
+    <div class="panel-body">
+        <pre>{{ rawResponse ?: 'lenonleitebouncer.lead.details.no_response'|trans }}</pre>
+    </div>
+</div>
+{% endblock %}

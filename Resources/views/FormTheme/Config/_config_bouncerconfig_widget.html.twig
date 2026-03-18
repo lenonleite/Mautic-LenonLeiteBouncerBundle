@@ -1,0 +1,25 @@
+{% block _config_bouncerconfig_widget %}
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{ 'mautic.config.tab.bouncerconfig'|trans }}</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6">
+                    {{ form_widget(form) }}
+                </div>
+                <div class="col-md-6">
+                    <div class="alert alert-info">
+                        <strong>{{ 'lenonleitebouncer.config.referral.title'|trans }}</strong>
+                        <p class="mb-10">{{ 'lenonleitebouncer.config.referral.help'|trans }}</p>
+                        <p>
+                            <a class="btn btn-primary" href="https://withlove.usebouncer.com/ioxhfxgs6zii" target="_blank" rel="noopener noreferrer">
+                                {{ 'lenonleitebouncer.config.referral.button'|trans }}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

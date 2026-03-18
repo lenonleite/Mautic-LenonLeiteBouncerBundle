@@ -1,0 +1,25 @@
+{% set status = fields['core']['bouncer_status']['value'] is defined ? fields['core']['bouncer_status']['value']|lower : '' %}
+{% set iconClass = 'ri-question-line text-muted' %}
+{% set labelClass = 'label-default' %}
+
+{% if status == 'deliverable' %}
+    {% set iconClass = 'ri-checkbox-circle-line text-success' %}
+    {% set labelClass = 'label-success' %}
+{% elseif status == 'risky' %}
+    {% set iconClass = 'ri-error-warning-line text-warning' %}
+    {% set labelClass = 'label-warning' %}
+{% elseif status == 'undeliverable' %}
+    {% set iconClass = 'ri-close-circle-line text-danger' %}
+    {% set labelClass = 'label-danger' %}
+{% endif %}
+
+<td class="{{ class }}">
+    {% if status != '' %}
+        <span class="label {{ labelClass }}">
+            <i class="{{ iconClass }}"></i>
+            {{ ('lenonleitebouncer.status.' ~ status)|trans }}
+        </span>
+    {% else %}
+        <span class="text-muted">{{ 'lenonleitebouncer.common.na'|trans }}</span>
+    {% endif %}
+</td>

@@ -1,0 +1,20 @@
+{% set score = fields['core']['bouncer_score']['value'] is defined ? fields['core']['bouncer_score']['value'] : null %}
+{% set labelClass = 'label-default' %}
+
+{% if score is not null and score != '' %}
+    {% if score >= 80 %}
+        {% set labelClass = 'label-success' %}
+    {% elseif score >= 50 %}
+        {% set labelClass = 'label-warning' %}
+    {% else %}
+        {% set labelClass = 'label-danger' %}
+    {% endif %}
+{% endif %}
+
+<td class="{{ class }}">
+    {% if score is not null and score != '' %}
+        <span class="label {{ labelClass }}">{{ score }}</span>
+    {% else %}
+        <span class="text-muted">{{ 'lenonleitebouncer.common.na'|trans }}</span>
+    {% endif %}
+</td>

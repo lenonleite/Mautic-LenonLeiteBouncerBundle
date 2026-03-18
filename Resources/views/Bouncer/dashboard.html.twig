@@ -1,0 +1,73 @@
+{% extends '@MauticCore/Default/content.html.twig' %}
+
+{% block headerTitle %}{{ 'lenonleitebouncer.menu.requests'|trans }}{% endblock %}
+{% block mauticContent %}bouncer{% endblock %}
+
+{% block content %}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">{{ 'lenonleitebouncer.dashboard.title'|trans }}</h3>
+    </div>
+    <div class="panel-body">
+        {% if not hasApiKey %}
+            <div class="alert alert-warning">
+                <strong>{{ 'lenonleitebouncer.dashboard.api_key_missing'|trans }}</strong>
+                {{ 'lenonleitebouncer.dashboard.api_key_missing_help'|trans }}
+                <a class="btn btn-warning btn-sm" href="{{ partnerUrl }}" target="_blank" rel="noopener noreferrer">{{ 'lenonleitebouncer.dashboard.cta.referral'|trans }}</a>
+            </div>
+        {% endif %}
+        <p>
+            <a class="btn btn-primary" href="{{ partnerUrl }}" target="_blank" rel="noopener noreferrer">{{ 'lenonleitebouncer.dashboard.cta.buy_credits'|trans }}</a>
+        </p>
+        <p>{{ 'lenonleitebouncer.dashboard.total_requests'|trans }}: {{ totals.requests }}</p>
+        <p>{{ 'lenonleitebouncer.dashboard.total_emails'|trans }}: {{ totals.emails }}</p>
+        <p>{{ 'lenonleitebouncer.dashboard.credits_used'|trans }}: {{ totals.credits }}</p>
+    </div>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>{{ 'mautic.core.id'|trans }}</th>
+            <th>{{ 'lenonleitebouncer.dashboard.column.batch_id'|trans }}</th>
+            <th>{{ 'lenonleitebouncer.dashboard.column.source'|trans }}</th>
+            <th>{{ 'lenonleitebouncer.dashboard.column.status'|trans }}</th>
+            <th>{{ 'lenonleitebouncer.dashboard.column.quantity'|trans }}</th>
+            <th>{{ 'lenonleitebouncer.dashboard.column.processed'|trans }}</th>
+            <th>{{ 'lenonleitebouncer.dashboard.column.credits'|trans }}</th>
+            <th>{{ 'lenonleitebouncer.dashboard.column.created'|trans }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+            {% set sourceKey = 'lenonleitebouncer.dashboard.source.' ~ item.source %}
+            {% set sourceLabel = sourceKey|trans %}
+            {% set statusKey = 'lenonleitebouncer.dashboard.status.' ~ item.status %}
+            {% set statusLabel = statusKey|trans %}
+            {% set badgeClass = 'label-default' %}
+            {% if item.status in ['deliverable', 'completed'] %}
+                {% set badgeClass = 'label-success' %}
+            {% elseif item.status in ['risky', 'processing'] %}
+                {% set badgeClass = 'label-warning' %}
+            {% elseif item.status in ['undeliverable', 'failed'] %}
+                {% set badgeClass = 'label-danger' %}
+            {% elseif item.status in ['unknown', 'pending'] %}
+                {% set badgeClass = 'label-default' %}
+            {% endif %}
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.batchId }}</td>
+                <td>{{ sourceLabel != sourceKey ? sourceLabel : item.source }}</td>
+                <td><span class="label {{ badgeClass }}">{{ statusLabel != statusKey ? statusLabel : item.status }}</span></td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.processed }}</td>
+                <td>{{ item.creditsUsed }}</td>
+                <td>{{ item.dateAdded|date('Y-m-d H:i:s') }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="8">{{ 'lenonleitebouncer.dashboard.no_requests'|trans }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
