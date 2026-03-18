@@ -7,6 +7,7 @@ namespace MauticPlugin\LenonLeiteBouncerBundle\Tests\Functional\Service;
 use Mautic\CoreBundle\Test\MauticMysqlTestCase;
 use MauticPlugin\LenonLeiteBouncerBundle\Client\BouncerClientInterface;
 use MauticPlugin\LenonLeiteBouncerBundle\Entity\BouncerRequest;
+use MauticPlugin\LenonLeiteBouncerBundle\Integration\Config;
 use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerVerificationService;
 use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\ActivePluginTrait;
 use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\HelperEntitiesTrait;
@@ -58,6 +59,10 @@ class BouncerVerificationServiceTest extends MauticMysqlTestCase
                 return [];
             }
         });
+
+        $config = $this->createMock(Config::class);
+        $config->method('isEnabled')->willReturn(true);
+        static::getContainer()->set(Config::class, $config);
 
         $verificationService = static::getContainer()->get(BouncerVerificationService::class);
         \assert($verificationService instanceof BouncerVerificationService);
