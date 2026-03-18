@@ -80,7 +80,7 @@ The config page includes:
 
 ## Requirements
 
-- Mautic 5
+- Mautic 5.2
 - A valid Bouncer API key
 - Plugin installed and published
 
@@ -170,13 +170,13 @@ That means:
 ### 1. Create a batch
 
 ```bash
-ddev exec php bin/console bouncer:verify:batch-create --limit=100
+php bin/console bouncer:verify:batch-create --limit=100
 ```
 
 You can also start after a specific contact ID:
 
 ```bash
-ddev exec php bin/console bouncer:verify:batch-create --limit=100 --min-id=5000
+php bin/console bouncer:verify:batch-create --limit=100 --min-id=5000
 ```
 
 This command returns:
@@ -197,13 +197,13 @@ Bouncer may take some time to complete the batch.
 ### 3. Sync results into Mautic
 
 ```bash
-ddev exec php bin/console bouncer:verify:batch-sync
+php bin/console bouncer:verify:batch-sync
 ```
 
 Optional:
 
 ```bash
-ddev exec php bin/console bouncer:verify:batch-sync --limit=20
+php bin/console bouncer:verify:batch-sync --limit=20
 ```
 
 This command:
@@ -225,14 +225,14 @@ Expected command output:
 Typical flow:
 
 ```bash
-ddev exec php bin/console bouncer:verify:batch-create --limit=100
-ddev exec php bin/console bouncer:verify:batch-sync
+php bin/console bouncer:verify:batch-create --limit=100
+php bin/console bouncer:verify:batch-sync
 ```
 
 If the batch is not completed yet, wait and run sync again:
 
 ```bash
-ddev exec php bin/console bouncer:verify:batch-sync
+php bin/console bouncer:verify:batch-sync
 ```
 
 ## Understanding Results
@@ -274,54 +274,6 @@ This page is useful for:
 - checking whether requests were processed
 - estimating local usage
 - accessing the referral CTA when you need more credits
-
-## Troubleshooting
-
-### `Bouncer API request failed with status 400`
-
-The plugin now includes the Bouncer response body in the exception message.
-
-Retry the command:
-
-```bash
-ddev exec php bin/console bouncer:verify:batch-create
-```
-
-Then read the full error text. It should now be much easier to see what Bouncer rejected.
-
-### `batch-sync` does nothing
-
-Check these first:
-
-- the request exists in `/s/bouncer/requests`
-- the batch is not still queued or processing
-- the returned Bouncer emails match your Mautic lead emails
-
-Then rerun:
-
-```bash
-ddev exec php bin/console bouncer:verify:batch-sync
-```
-
-### Single check works but you do not see useful values
-
-Open:
-
-- `View Bouncer Details`
-
-Also inspect:
-
-- `bouncer_raw_response`
-
-That field stores the raw Bouncer response for debugging.
-
-## Testing
-
-Run the bundle test suite:
-
-```bash
-ddev exec composer test plugins/LenonLeiteBouncerBundle/
-```
 
 ## Referral
 
