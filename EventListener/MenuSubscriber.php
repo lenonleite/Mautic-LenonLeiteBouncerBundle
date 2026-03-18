@@ -32,7 +32,7 @@ class MenuSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $menuItems = $event->getMenuItems();
+        $menuItems             = $event->getMenuItems();
         $menuItems['children'] = $this->removeBouncerMenuItem($menuItems['children'] ?? []);
         $event->setMenuItems($menuItems);
     }

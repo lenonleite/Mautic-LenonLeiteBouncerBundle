@@ -24,7 +24,7 @@ class BouncerFieldSetup
             'name' => 'Bouncer Reason',
         ],
         'bouncer_toxic' => [
-            'type' => 'boolean',
+            'type' => 'text',
             'name' => 'Bouncer Toxic',
         ],
         'bouncer_toxicity' => [
@@ -62,6 +62,13 @@ class BouncerFieldSetup
         foreach (self::FIELD_DEFINITIONS as $alias => $definition) {
             $existing = $this->leadFieldRepository->findOneBy(['alias' => $alias]);
             if ($existing instanceof LeadField) {
+                if ($existing->getType() !== $definition['type']) {
+                    $existing->setType($definition['type']);
+                    $existing->setName($definition['name']);
+                    $existing->setGroup('core');
+                    $this->fieldModel->saveEntity($existing);
+                }
+
                 continue;
             }
 
