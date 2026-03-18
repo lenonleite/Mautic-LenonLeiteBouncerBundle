@@ -6,6 +6,7 @@ if (false === $localPhpStanConfig) {
     throw new \RuntimeException('Unable to read phpstan.neon.');
 }
 
+
 $configParts = explode('###', $localPhpStanConfig);
 
 if (3 !== count($configParts)) {
