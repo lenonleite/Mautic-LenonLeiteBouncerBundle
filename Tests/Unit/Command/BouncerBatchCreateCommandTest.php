@@ -73,11 +73,11 @@ class BouncerBatchCreateCommandTest extends TestCase
         $translator->method('trans')
             ->willReturnCallback(static function (string $id): string {
                 return match ($id) {
-                    'lenonleitebouncer.command.batch_create.error.disabled' => 'Bouncer plugin is not enabled.',
-                    'lenonleitebouncer.command.batch_create.output.submitted' => 'Submitted',
-                    'lenonleitebouncer.command.batch_create.output.batch_id' => 'Batch ID',
+                    'lenonleitebouncer.command.batch_create.error.disabled'    => 'Bouncer plugin is not enabled.',
+                    'lenonleitebouncer.command.batch_create.output.submitted'  => 'Submitted',
+                    'lenonleitebouncer.command.batch_create.output.batch_id'   => 'Batch ID',
                     'lenonleitebouncer.command.batch_create.output.request_id' => 'Request ID',
-                    default => $id,
+                    default                                                    => $id,
                 };
             });
 

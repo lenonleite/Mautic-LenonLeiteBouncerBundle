@@ -23,9 +23,9 @@ class ConfigPageTest extends MauticMysqlTestCase
 
     public function testBouncerConfigPageShowsPanelAndReferralButton(): void
     {
-        $crawler = $this->client->request(Request::METHOD_GET, '/s/config/edit?tab=bouncerconfig');
+        $crawler  = $this->client->request(Request::METHOD_GET, '/s/config/edit?tab=bouncerconfig');
         $response = $this->client->getResponse();
-        $content = (string) $response->getContent();
+        $content  = (string) $response->getContent();
 
         Assert::assertTrue($response->isOk());
         Assert::assertStringContainsString('Bouncer Settings', $content);

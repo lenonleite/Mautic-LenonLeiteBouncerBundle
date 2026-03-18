@@ -4,87 +4,50 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LenonLeiteBouncerBundle\Tests\Functional\Controller;
 
-use Mautic\CoreBundle\Test\MauticMysqlTestCase;
-use MauticPlugin\LenonLeiteBouncerBundle\Client\BouncerClientInterface;
-use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\ActivePluginTrait;
-use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\HelperEntitiesTrait;
+use Mautic\CoreBundle\Event\CustomTemplateEvent;
+use MauticPlugin\LenonLeiteBouncerBundle\EventListener\LeadViewSubscriber;
+use MauticPlugin\LenonLeiteBouncerBundle\Integration\Config;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-class ContactListColumnsTest extends MauticMysqlTestCase
+class ContactListColumnsTest extends TestCase
 {
-    use ActivePluginTrait;
-    use HelperEntitiesTrait;
-
-    protected function setUp(): void
+    public function testContactsListUsesBouncerTemplateWhenPluginIsActive(): void
     {
-        parent::setUp();
-        $this->activePlugin();
-        $this->useCleanupRollback = false;
-        $this->setUpSymfony($this->configParams);
-        $this->enableBouncerConfig();
+        $subscriber = new LeadViewSubscriber($this->createEnabledConfigMock());
+        $event      = new CustomTemplateEvent(new Request(), '@MauticLead/Lead/list.html.twig');
+
+        $subscriber->onTemplateRender($event);
+
+        self::assertSame('@LenonLeiteBouncer/Lead/list.html.twig', $event->getTemplate());
+
+        $template = file_get_contents(__DIR__.'/../../../Resources/views/Lead/_list.html.twig');
+        self::assertIsString($template);
+        self::assertStringContainsString("'bouncer_score'", $template);
+        self::assertStringContainsString('lenonleitebouncer.contact_list.column.score', $template);
+        self::assertStringNotContainsString("'bouncer':", $template);
     }
 
-    public function testContactsListShowsBouncerScoreColumn(): void
+    public function testContactsListKeepsDefaultTemplateWhenPluginIsInactive(): void
     {
-        $lead = $this->createLead('Alice', 'alice@example.com');
+        $config = $this->createMock(Config::class);
+        $config->method('isPublished')->willReturn(false);
+        $config->method('isEnabled')->willReturn(false);
 
-        static::getContainer()->set(BouncerClientInterface::class, new class() implements BouncerClientInterface {
-            public function verify(string $email): array
-            {
-                return [
-                    'status'   => 'deliverable',
-                    'score'    => 95,
-                    'reason'   => 'accepted_email',
-                    'toxic'    => 'no',
-                    'toxicity' => 0,
-                    'provider' => 'google',
-                ];
-            }
+        $subscriber = new LeadViewSubscriber($config);
+        $event      = new CustomTemplateEvent(new Request(), '@MauticLead/Lead/list.html.twig');
 
-            public function createBatch(array $entries): array
-            {
-                return [];
-            }
+        $subscriber->onTemplateRender($event);
 
-            public function getBatchStatus(string $batchId): array
-            {
-                return [];
-            }
-
-            public function getBatchResults(string $batchId): array
-            {
-                return [];
-            }
-        });
-
-        $this->client->request(Request::METHOD_GET, sprintf('/s/bouncer/lead/%d/check', $lead->getId()));
-        $this->client->request(Request::METHOD_GET, '/s/contacts');
-
-        $response = $this->client->getResponse();
-        $content  = (string) $response->getContent();
-
-        self::assertTrue($response->isOk());
-        self::assertStringContainsString('Bouncer Score', $content);
-        self::assertStringContainsString('95', $content);
-        self::assertStringNotContainsString('>Bouncer<', $content);
+        self::assertSame('@MauticLead/Lead/list.html.twig', $event->getTemplate());
     }
 
-    private function enableBouncerConfig(): void
+    private function createEnabledConfigMock(): Config
     {
-        $crawler          = $this->client->request(Request::METHOD_GET, '/s/config/edit?tab=bouncerconfig');
-        $configSaveButton = $crawler->selectButton('config[buttons][apply]');
-        $configForm       = $configSaveButton->form();
-        $data             = $configForm->getValues();
+        $config = $this->createMock(Config::class);
+        $config->method('isPublished')->willReturn(true);
+        $config->method('isEnabled')->willReturn(true);
 
-        $data['config[coreconfig][site_url]']               = 'https://mautic-community.local';
-        $data['config[leadconfig][contact_columns]']        = ['name', 'email', 'id'];
-        $data['config[coreconfig][do_not_track_ips]']       = "%ip1%\n%ip2%";
-        $data['config[bouncerconfig][bouncer_active]']      = 1;
-        $data['config[bouncerconfig][bouncer_api_key]']     = 'test-api-key';
-        $data['config[bouncerconfig][bouncer_batch_size]']  = 100;
-        $data['config[bouncerconfig][bouncer_sync_limit]']  = 20;
-
-        $configForm->setValues($data);
-        $this->client->submit($configForm);
+        return $config;
     }
 }

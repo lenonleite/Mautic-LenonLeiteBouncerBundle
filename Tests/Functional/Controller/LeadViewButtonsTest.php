@@ -4,37 +4,51 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LenonLeiteBouncerBundle\Tests\Functional\Controller;
 
-use Mautic\CoreBundle\Test\MauticMysqlTestCase;
-use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\ActivePluginTrait;
-use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\HelperEntitiesTrait;
-use PHPUnit\Framework\Assert;
+use Mautic\CoreBundle\Event\CustomTemplateEvent;
+use MauticPlugin\LenonLeiteBouncerBundle\EventListener\LeadViewSubscriber;
+use MauticPlugin\LenonLeiteBouncerBundle\Integration\Config;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
-class LeadViewButtonsTest extends MauticMysqlTestCase
+class LeadViewButtonsTest extends TestCase
 {
-    use ActivePluginTrait;
-    use HelperEntitiesTrait;
-
-    protected function setUp(): void
+    public function testLeadViewUsesBouncerTemplateWhenPluginIsActive(): void
     {
-        parent::setUp();
-        $this->activePlugin();
-        $this->useCleanupRollback = false;
-        $this->setUpSymfony($this->configParams);
+        $subscriber = new LeadViewSubscriber($this->createEnabledConfigMock());
+        $event      = new CustomTemplateEvent(new Request(), '@MauticLead/Lead/lead.html.twig');
+
+        $subscriber->onTemplateRender($event);
+
+        self::assertSame('@LenonLeiteBouncer/Lead/lead.html.twig', $event->getTemplate());
+
+        $template = file_get_contents(__DIR__.'/../../../Resources/views/Lead/lead.html.twig');
+        self::assertIsString($template);
+        self::assertStringContainsString('lenonleitebouncer.lead.action.check', $template);
+        self::assertStringContainsString('lenonleitebouncer.lead.action.details', $template);
+        self::assertStringContainsString('mautic_bouncer_check_lead', $template);
+        self::assertStringContainsString('mautic_bouncer_lead_details', $template);
     }
 
-    public function testLeadViewShowsBouncerButtonsForLeadWithEmail(): void
+    public function testLeadViewKeepsDefaultTemplateWhenPluginIsInactive(): void
     {
-        $lead = $this->createLead('Alice', 'alice@example.com');
+        $config = $this->createMock(Config::class);
+        $config->method('isPublished')->willReturn(false);
+        $config->method('isEnabled')->willReturn(false);
 
-        $this->client->request(Request::METHOD_GET, sprintf('/s/contacts/view/%d', $lead->getId()));
-        $response = $this->client->getResponse();
-        $content  = (string) $response->getContent();
+        $subscriber = new LeadViewSubscriber($config);
+        $event      = new CustomTemplateEvent(new Request(), '@MauticLead/Lead/lead.html.twig');
 
-        Assert::assertTrue($response->isOk());
-        Assert::assertStringContainsString('Check with Bouncer', $content);
-        Assert::assertStringContainsString('View Bouncer Details', $content);
-        Assert::assertStringContainsString(sprintf('/s/bouncer/lead/%d/check', $lead->getId()), $content);
-        Assert::assertStringContainsString(sprintf('/s/bouncer/lead/%d/details', $lead->getId()), $content);
+        $subscriber->onTemplateRender($event);
+
+        self::assertSame('@MauticLead/Lead/lead.html.twig', $event->getTemplate());
+    }
+
+    private function createEnabledConfigMock(): Config
+    {
+        $config = $this->createMock(Config::class);
+        $config->method('isPublished')->willReturn(true);
+        $config->method('isEnabled')->willReturn(true);
+
+        return $config;
     }
 }

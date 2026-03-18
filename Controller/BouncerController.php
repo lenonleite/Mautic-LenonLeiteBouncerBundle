@@ -68,7 +68,7 @@ class BouncerController extends AbstractFormController
 
     public function checkLeadAction(Request $request, BouncerVerificationService $verificationService, int $leadId): Response
     {
-        $lead = $this->getLeadOr404($leadId);
+        $lead       = $this->getLeadOr404($leadId);
         $detailsUrl = $this->generateUrl('mautic_bouncer_lead_details', ['leadId' => $leadId]);
 
         if (in_array($request->getMethod(), ['GET', 'POST'], true)) {

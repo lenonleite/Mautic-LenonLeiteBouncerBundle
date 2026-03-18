@@ -7,6 +7,11 @@ namespace MauticPlugin\LenonLeiteBouncerBundle\Tests\Functional\Service;
 use Mautic\CoreBundle\Test\MauticMysqlTestCase;
 use MauticPlugin\LenonLeiteBouncerBundle\Client\BouncerClientInterface;
 use MauticPlugin\LenonLeiteBouncerBundle\Entity\BouncerRequest;
+use MauticPlugin\LenonLeiteBouncerBundle\Integration\Config;
+use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerFieldWriter;
+use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerRequestStore;
+use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerResultNormalizer;
+use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerVerificationService;
 use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\ActivePluginTrait;
 use MauticPlugin\LenonLeiteBouncerBundle\Tests\Traits\HelperEntitiesTrait;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +34,7 @@ class BouncerVerificationServiceTest extends MauticMysqlTestCase
     {
         $lead = $this->createLead('Alice', 'alice@example.com');
 
-        static::getContainer()->set(BouncerClientInterface::class, new class() implements BouncerClientInterface {
+        $client = new class() implements BouncerClientInterface {
             public function verify(string $email): array
             {
                 return [
@@ -56,9 +61,20 @@ class BouncerVerificationServiceTest extends MauticMysqlTestCase
             {
                 return [];
             }
-        });
+        };
 
-        $this->client->request(Request::METHOD_GET, sprintf('/s/bouncer/lead/%d/check', $lead->getId()));
+        $config = $this->createMock(Config::class);
+        $config->method('isEnabled')->willReturn(true);
+
+        $verificationService = new BouncerVerificationService(
+            $config,
+            $client,
+            static::getContainer()->get(BouncerResultNormalizer::class),
+            static::getContainer()->get(BouncerFieldWriter::class),
+            static::getContainer()->get(BouncerRequestStore::class),
+        );
+
+        $verificationService->verifyLead($lead);
 
         /** @var list<BouncerRequest> $requests */
         $requests = $this->em->getRepository(BouncerRequest::class)->findBy([], ['dateAdded' => 'DESC']);

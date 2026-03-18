@@ -49,10 +49,6 @@ class BouncerApiClient implements BouncerClientInterface
     {
         $response = $this->request('GET', '/email/verify/batch/'.$batchId.'/download');
 
-        if (array_is_list($response)) {
-            return $response;
-        }
-
         return isset($response['results']) && is_array($response['results']) ? $response['results'] : [];
     }
 
@@ -80,10 +76,7 @@ class BouncerApiClient implements BouncerClientInterface
         if ($status >= 400) {
             $body = $response->getContent(false);
 
-            throw new BouncerApiException($this->translator->trans('lenonleitebouncer.api.error.request_failed', [
-                '%status%' => $status,
-                '%body%'   => '' !== trim($body) ? $body : 'empty response body',
-            ]));
+            throw new BouncerApiException($this->translator->trans('lenonleitebouncer.api.error.request_failed', ['%status%' => $status, '%body%'   => '' !== trim($body) ? $body : 'empty response body']));
         }
 
         $payload = json_decode($response->getContent(false), true);

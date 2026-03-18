@@ -11,7 +11,7 @@ use Mautic\CoreBundle\Doctrine\Mapping\ClassMetadataBuilder;
 class BouncerRequest
 {
     private ?int $id              = null;
-    private string $batchId       = '';
+    private ?string $batchId      = '';
     private string $status        = 'pending';
     private int $quantity         = 0;
     private int $processed        = 0;
@@ -36,7 +36,7 @@ class BouncerRequest
         $builder->setTable('plugin_bouncer_requests');
 
         $builder->addId();
-        $builder->addNamedField('batchId', Types::STRING, 'batch_id', true);
+        $builder->addNamedField('batchId', Types::STRING, 'batch_id');
         $builder->addNamedField('status', Types::STRING, 'status');
         $builder->addNamedField('quantity', Types::INTEGER, 'quantity');
         $builder->addNamedField('processed', Types::INTEGER, 'processed');
@@ -63,7 +63,7 @@ class BouncerRequest
 
     public function getBatchId(): string
     {
-        return $this->batchId;
+        return $this->batchId ?? '';
     }
 
     public function setBatchId(string $batchId): void
