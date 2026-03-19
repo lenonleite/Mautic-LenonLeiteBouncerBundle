@@ -111,7 +111,7 @@ class BouncerBatchService
     public function syncRequest(BouncerRequest $request): array
     {
         $statusPayload = $this->client->getBatchStatus($request->getBatchId());
-        $request->setStatus((string) ($statusPayload['status'] ?? $request->getStatus()));
+        $request->setStatus($this->normalizeBatchStatus((string) ($statusPayload['status'] ?? $request->getStatus())));
         $request->setProcessed((int) ($statusPayload['processed'] ?? $request->getProcessed()));
         $request->setCreditsUsed((float) ($statusPayload['credits'] ?? $statusPayload['credits_used'] ?? $request->getCreditsUsed()));
 
@@ -120,23 +120,33 @@ class BouncerBatchService
         if ('completed' === $request->getStatus()) {
             $entries  = $this->decodeEntries($request->getPayloadJson());
             $byEmail  = [];
+            $byLeadId = [];
             foreach ($entries as $entry) {
-                $byEmail[strtolower((string) $entry['email'])] = (int) $entry['leadId'];
+                $leadId                                                   = (int) $entry['leadId'];
+                $byEmail[$this->normalizeEmail((string) $entry['email'])] = $leadId;
+                $byLeadId[$leadId]                                        = $leadId;
             }
 
             foreach ($this->client->getBatchResults($request->getBatchId()) as $row) {
-                ++$processed;
-                $email = strtolower((string) ($row['email'] ?? ''));
-                if ('' === $email || !isset($byEmail[$email])) {
+                if (!is_array($row)) {
                     continue;
                 }
 
-                $lead = $this->entityManager->getRepository(Lead::class)->find($byEmail[$email]);
+                ++$processed;
+                $payload = $this->extractResultPayload($row);
+                $leadId  = $this->extractLeadId($payload, $byLeadId);
+                $email   = $this->extractEmail($payload);
+
+                if (null === $leadId && ('' === $email || !isset($byEmail[$email]))) {
+                    continue;
+                }
+
+                $lead = $this->entityManager->getRepository(Lead::class)->find($leadId ?? $byEmail[$email]);
                 if (!$lead instanceof Lead) {
                     continue;
                 }
 
-                $normalized = $this->normalizer->normalize($row);
+                $normalized = $this->normalizer->normalize($payload);
                 if ($this->fieldWriter->write($lead, $normalized)) {
                     ++$updated;
                 }
@@ -166,5 +176,70 @@ class BouncerBatchService
         $decoded = json_decode($payloadJson, true);
 
         return is_array($decoded) ? $decoded : [];
+    }
+
+    private function normalizeBatchStatus(string $status): string
+    {
+        $normalized = strtolower(trim($status));
+
+        return match ($normalized) {
+            'ready', 'done', 'finished', 'complete' => 'completed',
+            default => '' !== $normalized ? $normalized : 'pending',
+        };
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     *
+     * @return array<string, mixed>
+     */
+    private function extractResultPayload(array $row): array
+    {
+        foreach (['result', 'email', 'verification'] as $nestedKey) {
+            if (isset($row[$nestedKey]) && is_array($row[$nestedKey])) {
+                return $row + $row[$nestedKey];
+            }
+        }
+
+        return $row;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function extractEmail(array $payload): string
+    {
+        foreach (['email', 'address'] as $key) {
+            if (isset($payload[$key]) && is_string($payload[$key])) {
+                return $this->normalizeEmail($payload[$key]);
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @param array<int, int>      $knownLeadIds
+     */
+    private function extractLeadId(array $payload, array $knownLeadIds): ?int
+    {
+        foreach (['leadId', 'lead_id', 'id'] as $key) {
+            if (!isset($payload[$key]) || !is_numeric($payload[$key])) {
+                continue;
+            }
+
+            $leadId = (int) $payload[$key];
+            if (isset($knownLeadIds[$leadId])) {
+                return $leadId;
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeEmail(string $email): string
+    {
+        return strtolower(trim($email));
     }
 }

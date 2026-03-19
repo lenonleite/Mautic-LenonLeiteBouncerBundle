@@ -26,6 +26,10 @@ For contacts with an email address, the plugin adds:
 
 - `Check with Bouncer`
 - `View Bouncer Details`
+![img.png](Assets/img/img.png)
+
+### Contact edit page
+![img.png](Assets/img/img_2.png)
 
 ### Contact list
 
