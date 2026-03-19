@@ -13,7 +13,6 @@ use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerBatchService;
 use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerFieldWriter;
 use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerRequestStore;
 use MauticPlugin\LenonLeiteBouncerBundle\Service\BouncerResultNormalizer;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class BouncerBatchServiceTest extends TestCase
