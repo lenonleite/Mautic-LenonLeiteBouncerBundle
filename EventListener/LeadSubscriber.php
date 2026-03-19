@@ -27,7 +27,7 @@ class LeadSubscriber implements EventSubscriberInterface
 
     public function onLeadPostSave(LeadEvent $event): void
     {
-        if (!$event->isNew() || !$this->config->isEnabled() || !$this->config->shouldCheckOnCreate()) {
+        if (!$this->config->isEnabled() || !$this->config->shouldCheckOnCreate()) {
             return;
         }
 
@@ -36,6 +36,20 @@ class LeadSubscriber implements EventSubscriberInterface
             return;
         }
 
+        if (!$event->isNew() && !$this->emailWasAddedOrChanged($lead->getChanges())) {
+            return;
+        }
+
         $this->verificationService->verifyLead($lead);
+    }
+
+    /**
+     * @param array<string, mixed> $changes
+     */
+    private function emailWasAddedOrChanged(array $changes): bool
+    {
+        $emailChange = $changes['fields']['email'] ?? $changes['email'] ?? null;
+
+        return is_array($emailChange) && array_key_exists(1, $emailChange);
     }
 }

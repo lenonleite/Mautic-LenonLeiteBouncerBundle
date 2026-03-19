@@ -49,7 +49,18 @@ class BouncerApiClient implements BouncerClientInterface
     {
         $response = $this->request('GET', '/email/verify/batch/'.$batchId.'/download');
 
-        return isset($response['results']) && is_array($response['results']) ? $response['results'] : [];
+        if (isset($response['results']) && is_array($response['results'])) {
+            return $response['results'];
+        }
+
+        if (isset($response['data']) && is_array($response['data'])) {
+            return array_is_list($response['data']) ? $response['data'] : [];
+        }
+
+        /** @var mixed $decodedResponse */
+        $decodedResponse = $response;
+
+        return is_array($decodedResponse) && array_is_list($decodedResponse) ? $decodedResponse : [];
     }
 
     /**

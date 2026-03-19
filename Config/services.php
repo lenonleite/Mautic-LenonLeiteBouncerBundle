@@ -19,10 +19,20 @@ return function (ContainerConfigurator $configurator): void {
         'tests/*',
         'vendor/*',
         'Entity/BouncerRequest.php',
+        'EventListener/*',
     ];
 
     $services->load('MauticPlugin\\LenonLeiteBouncerBundle\\', '../')
         ->exclude('../{'.implode(',', array_merge(MauticCoreExtension::DEFAULT_EXCLUDES, $excludes)).'}');
+
+    $services->set(MauticPlugin\LenonLeiteBouncerBundle\EventListener\ConfigSubscriber::class)
+        ->tag('kernel.event_subscriber');
+    $services->set(MauticPlugin\LenonLeiteBouncerBundle\EventListener\LeadViewSubscriber::class)
+        ->tag('kernel.event_subscriber');
+    $services->set(MauticPlugin\LenonLeiteBouncerBundle\EventListener\MenuSubscriber::class)
+        ->tag('kernel.event_subscriber');
+    $services->set(MauticPlugin\LenonLeiteBouncerBundle\Doctrine\LeadAutoVerifySubscriber::class)
+        ->tag('doctrine.event_subscriber');
 
     $services->set(BouncerClientInterface::class, BouncerApiClient::class);
 };
