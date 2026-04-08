@@ -281,7 +281,7 @@ This page is useful for:
 
 ## Youtube Video Example
 
-[![Bouncer Mautic Integration](https://img.youtube.com/vi/9nXoVh2jH8g/0.jpg)](https://www.youtube.com/watch?v=4n6i9NdLpn4)
+[![Bouncer Mautic Integration](https://img.youtube.com/vi/4n6i9NdLpn4/0.jpg)](https://www.youtube.com/watch?v=4n6i9NdLpn4)
 
 ## Referral
 
