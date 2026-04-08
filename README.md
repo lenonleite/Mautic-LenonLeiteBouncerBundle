@@ -279,7 +279,7 @@ This page is useful for:
 - estimating local usage
 - accessing the referral CTA when you need more credits
 
-## Youtube Video Example
+## YouTube Video Example
 
 [![Bouncer Mautic Integration](https://img.youtube.com/vi/4n6i9NdLpn4/0.jpg)](https://www.youtube.com/watch?v=4n6i9NdLpn4)
 
