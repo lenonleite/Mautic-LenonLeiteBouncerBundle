@@ -29,6 +29,8 @@ return function (ContainerConfigurator $configurator): void {
         ->tag('kernel.event_subscriber');
     $services->set(MauticPlugin\LenonLeiteBouncerBundle\EventListener\LeadViewSubscriber::class)
         ->tag('kernel.event_subscriber');
+    $services->set(MauticPlugin\LenonLeiteBouncerBundle\EventListener\LeadSubscriber::class)
+        ->tag('kernel.event_subscriber');
     $services->set(MauticPlugin\LenonLeiteBouncerBundle\EventListener\MenuSubscriber::class)
         ->tag('kernel.event_subscriber');
     $services->set(MauticPlugin\LenonLeiteBouncerBundle\Doctrine\LeadAutoVerifySubscriber::class)
